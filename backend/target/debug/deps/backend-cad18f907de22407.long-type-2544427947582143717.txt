@@ -1,0 +1,1 @@
+fn(Multipart) -> impl futures::Future<Output = std::result::Result<Json<serde_json::Value>, {type error}>> {handle_upload}
