@@ -1,5 +1,6 @@
 mod convert;
 mod health;
+mod test;
 mod upload;
 
 use axum::routing::{get, post};
@@ -10,4 +11,5 @@ pub fn routes() -> Router {
         .merge(health::routes())
         .route("/upload", post(upload::handle_upload))
         .route("/convert/:file_id", get(convert::convert_to_text))
+        .route("/pdf/:file_id", get(convert::generate_pdf))
 }

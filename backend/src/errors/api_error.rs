@@ -21,9 +21,6 @@ pub enum ApiError {
     #[error("File error: {0}")]
     FileError(String),
 
-    #[error("OCR processing error: {0}")]
-    OcrError(String),
-
     #[error("Claude API error: {0}")]
     ClaudeError(String),
 
@@ -45,9 +42,6 @@ impl IntoResponse for ApiError {
             ApiError::NotFound(ref message) => (StatusCode::NOT_FOUND, message.to_owned()),
             ApiError::ValidationError(ref message) => (StatusCode::BAD_REQUEST, message.to_owned()),
             ApiError::FileError(ref message) => (StatusCode::BAD_REQUEST, message.to_owned()),
-            ApiError::OcrError(ref message) => {
-                (StatusCode::INTERNAL_SERVER_ERROR, message.to_owned())
-            }
             ApiError::ClaudeError(ref message) => {
                 (StatusCode::INTERNAL_SERVER_ERROR, message.to_owned())
             }

@@ -1,1 +1,2 @@
-pub mod ocr;
+pub mod claude;
+pub mod pdf;

@@ -17,6 +17,13 @@ use tower_http::trace::TraceLayer;
 async fn main() {
     tracing_subscriber::fmt::init();
 
+    // Create necessary directories
+    for dir in ["uploads", "latex", "pdf"] {
+        tokio::fs::create_dir_all(dir)
+            .await
+            .expect(&format!("Failed to create {} directory", dir));
+    }
+
     let app = Router::new()
         .merge(api::routes())
         .layer(
