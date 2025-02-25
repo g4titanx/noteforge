@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = 'https://backend-billowing-waterfall-6116.fly.dev';
 
 export async function uploadFiles(files) {
   const formData = new FormData();

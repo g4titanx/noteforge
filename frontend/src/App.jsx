@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState } from 'react';
 import FileUpload from './components/FileUpload';
 import LatexView from './components/LatexView';
