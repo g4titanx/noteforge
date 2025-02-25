@@ -31,12 +31,11 @@ async fn main() {
         .merge(api::routes())
         .layer(
             CorsLayer::new()
-                // Allow only our frontend origins
                 .allow_origin([
                     "http://localhost:5173".parse().unwrap(),
                     "http://localhost:3000".parse().unwrap(),
-                    // TODO(g4titanx): Update URL
-                    "https://noteforge.yourdomain.com".parse().unwrap(),
+                    "https://noteforge-nu.vercel.app".parse().unwrap(),
+                    "https://noteforge-2oepmnj85-g4titans-projects.vercel.app".parse().unwrap(),
                 ])
                 .allow_methods([
                     Method::GET,
@@ -50,7 +49,7 @@ async fn main() {
         )
         .layer(TraceLayer::new_for_http());
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     tracing::info!("listening on {}", addr);
     axum::serve(tokio::net::TcpListener::bind(addr).await.unwrap(), app)
         .await

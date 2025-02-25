@@ -1,0 +1,9 @@
+# flyctl launch added from .gitignore
+target
+uploads
+.env
+latex
+pdf
+math_notes.pdf
+.DS_Store
+fly.toml
