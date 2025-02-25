@@ -1,0 +1,213 @@
+/* src/styles/styles.css */
+:root {
+  --primary-color: #000000;
+  --secondary-color: #ffffff;
+  --success-color: #008000;
+  --error-color: #ff0000;
+  --border-color: #000000;
+  --background-color: #ffffff;
+  --text-color: #000000;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+.app-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  margin-bottom: 30px;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+header h1 {
+  font-size: 2rem;
+  margin-bottom: 5px;
+}
+
+/* Updated button styles */
+button {
+  background-color: var(--secondary-color); /* White background */
+  color: var(--primary-color); /* Black text */
+  border: 2px solid var(--primary-color); /* Black outline */
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 1rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.1s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+button:active {
+  animation: shake 0.1s linear;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  50% { transform: translateX(0); }
+  75% { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+
+button:disabled {
+  background-color: #cccccc;
+  color: #666666;
+  border-color: #666666;
+  cursor: not-allowed;
+  animation: none;
+}
+
+button.secondary {
+  background-color: var(--secondary-color);
+  color: var(--primary-color);
+  border: 1px solid var(--border-color);
+}
+
+.error-message {
+  background-color: var(--error-color);
+  color: white;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+/* File Upload Component */
+.upload-container {
+  margin-bottom: 30px;
+}
+
+.file-input-container {
+  margin-bottom: 20px;
+}
+
+.file-input-label {
+  display: inline-block;
+  background-color: var(--secondary-color);
+  color: var(--primary-color);
+  padding: 10px 15px;
+  cursor: pointer;
+  border: 2px solid var(--primary-color);
+}
+
+.file-input {
+  display: none;
+}
+
+.selected-files {
+  margin-top: 10px;
+}
+
+.selected-files ul {
+  list-style: none;
+}
+
+.selected-files li {
+  margin-bottom: 5px;
+}
+
+.upload-info {
+  margin-bottom: 20px;
+}
+
+.multi-page-info {
+  font-style: italic;
+}
+
+/* LaTeX View Component */
+.latex-container {
+  margin-bottom: 30px;
+}
+
+.latex-content {
+  margin: 20px 0;
+  border: 1px solid var(--border-color);
+  padding: 15px;
+  max-height: 500px;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+}
+
+.latex-display {
+  white-space: pre-wrap;
+  font-family: monospace;
+}
+
+.latex-editor {
+  width: 100%;
+  height: 400px;
+  font-family: monospace;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* PDF View Component */
+.pdf-container {
+  margin-bottom: 30px;
+}
+
+.pdf-viewer {
+  margin: 20px 0;
+  border: 1px solid var(--border-color);
+  height: 600px;
+}
+
+.loading {
+  padding: 20px;
+  text-align: center;
+  font-style: italic;
+}
+
+.pdf-error {
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid var(--error-color);
+  background-color: rgba(255, 0, 0, 0.05);
+}
+
+.pdf-error h3 {
+  color: var(--error-color);
+  margin-bottom: 10px;
+}
+
+.error-details {
+  margin: 15px 0;
+  font-family: monospace;
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #f8f8f8;
+  border: 1px solid #ddd;
+}
+
+.error-details p {
+  margin-bottom: 10px;
+}
+
+.pdf-error .action-buttons {
+  margin-top: 20px;
+}

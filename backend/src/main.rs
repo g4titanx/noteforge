@@ -24,6 +24,9 @@ async fn main() {
             .expect(&format!("Failed to create {} directory", dir));
     }
 
+    // Load environment variables
+    dotenv::dotenv().ok();
+
     let app = Router::new()
         .merge(api::routes())
         .layer(

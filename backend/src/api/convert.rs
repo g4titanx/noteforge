@@ -1,18 +1,18 @@
+use crate::{
+    config::env::Config,
+    errors::{ApiError, Result},
+    models::document::Document,
+    services::{claude::ClaudeService, pdf::PdfService},
+    utils::headers::HeaderMap,
+};
 use axum::{
     extract::{Path, Query},
-    headers::HeaderMap,
     response::{IntoResponse, Response},
     Json,
 };
 use serde::Deserialize;
-use uuid::Uuid;
 use std::path::PathBuf;
-use crate::{
-    config::Config,
-    errors::{Result, ApiError},
-    models::document::Document,
-    services::{claude::ClaudeService, pdf::PdfService},
-};
+use uuid::Uuid;
 
 #[derive(Debug, Deserialize)]
 pub struct ConvertParams {
@@ -48,15 +48,16 @@ pub async fn convert_to_text(
 ) -> Result<Json<Document>> {
     let config = Config::from_env()?;
     let claude_service = ClaudeService::new(&config);
-    
+
     let upload_dir = PathBuf::from("uploads");
-    
+
     let content = if params.is_multi_page {
         let files: Vec<PathBuf> = std::fs::read_dir(&upload_dir)
             .map_err(|e| ApiError::FileError(format!("Failed to read directory: {}", e)))?
             .filter_map(|entry| entry.ok())
             .filter(|entry| {
-                entry.path()
+                entry
+                    .path()
                     .file_stem()
                     .and_then(|stem| stem.to_str())
                     .map(|name| name.starts_with(&file_id.to_string()))
@@ -66,9 +67,12 @@ pub async fn convert_to_text(
             .collect();
 
         if files.is_empty() {
-            return Err(ApiError::NotFound(format!("No files found for ID {}", file_id)));
+            return Err(ApiError::NotFound(format!(
+                "No files found for ID {}",
+                file_id
+            )));
         }
-        
+
         claude_service.convert_multiple_pages(&files).await?
     } else {
         let file_path = upload_dir.join(format!("{}.png", file_id));
@@ -101,7 +105,9 @@ pub async fn generate_pdf(Path(file_id): Path<Uuid>) -> Result<impl IntoResponse
         .map_err(|e| ApiError::FileError(format!("Failed to create PDF directory: {}", e)))?;
 
     let output_path = output_dir.join(format!("{}.pdf", file_id));
-    let pdf_data = pdf_service.generate_pdf(&latex_content, &output_path).await?;
+    let pdf_data = pdf_service
+        .generate_pdf(&latex_content, &output_path)
+        .await?;
 
     // Create response headers
     let mut headers = HeaderMap::new();

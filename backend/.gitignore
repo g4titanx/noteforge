@@ -1,3 +1,7 @@
 /target
 /uploads
 /.env
+/latex
+/pdf
+/math_notes.pdf
+../.DS_Store

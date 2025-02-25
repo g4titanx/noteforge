@@ -82,21 +82,44 @@ impl ClaudeService {
     pub async fn convert_multiple_pages(&self, image_paths: &[PathBuf]) -> Result<String> {
         let mut combined_latex = String::new();
         let paths_len = image_paths.len();
-
+    
         for (index, path) in image_paths.iter().enumerate() {
             let page_type = match index {
                 0 => PageType::First,
                 i if i == paths_len - 1 => PageType::Last,
                 _ => PageType::Middle,
             };
-
+    
             let content = self.process_with_prompt(path, page_type).await?;
-            if index > 0 {
-                combined_latex.push_str("\\newpage\n");
+            
+            // For the first page, keep everything
+            if index == 0 {
+                combined_latex.push_str(&content);
+            } 
+            // For middle pages, strip preamble and end document tags
+            else if index < paths_len - 1 {
+                // Extract only the content between \begin{document} and \end{document}
+                if let Some(begin_idx) = content.find("\\begin{document}") {
+                    if let Some(content_start) = content[begin_idx..].find('\n') {
+                        let start_idx = begin_idx + content_start + 1;
+                        combined_latex.push_str("\\newpage\n");
+                        combined_latex.push_str(&content[start_idx..].replace("\\end{document}", ""));
+                    }
+                }
+            } 
+            // For last page, strip preamble but keep end document tag
+            else {
+                // Extract only the content between \begin{document} and \end{document}
+                if let Some(begin_idx) = content.find("\\begin{document}") {
+                    if let Some(content_start) = content[begin_idx..].find('\n') {
+                        let start_idx = begin_idx + content_start + 1;
+                        combined_latex.push_str("\\newpage\n");
+                        combined_latex.push_str(&content[start_idx..]);
+                    }
+                }
             }
-            combined_latex.push_str(&content);
         }
-
+    
         Ok(combined_latex)
     }
 
@@ -121,24 +144,24 @@ impl ClaudeService {
                 Do not include ```latex or ``` markers. Return only the raw LaTeX code."
             }
             PageType::First => {
-                "Convert this mathematical content to the start of a LaTeX document:
+                "Return ONLY raw LaTeX code for the beginning of a document:
                 1. Document Structure:
                    - Must start with \\documentclass{article}
                    - Include necessary packages
-                   - Begin document
+                   - Begin with \\begin{document}
                 2. Mathematical Content:
                    - Format equations properly
                 Do not include \\end{document}.
                 Do not include ```latex or ``` markers. Return only the raw LaTeX code."
             }
             PageType::Middle => {
-                "Convert this mathematical content to LaTeX:
-                Format all equations and preserve layout.
-                Do not include preamble or \\end{document}.
-                Do not include ```latex or ``` markers. Return only the raw LaTeX code."
+                "Return ONLY raw LaTeX content for a middle page:
+                1. Format the mathematical content
+                2. Do NOT include \\documentclass, \\begin{document}, or \\end{document}
+                3. Just return the formatted content that would go inside a document"
             }
             PageType::Last => {
-                "Convert this mathematical content to LaTeX:
+                "Return ONLY raw LaTeX content for the final page:
                 Format all equations and end with \\end{document}.
                 Do not include ```latex or ``` markers. Return only the raw LaTeX code."
             }

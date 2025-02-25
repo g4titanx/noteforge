@@ -1,8 +1,7 @@
 use crate::errors::{ApiError, Result};
 use std::path::PathBuf;
-use tectonic::driver::ProcessingSessionBuilder;
-use tectonic::status::termcolor::ColorChoice;
 use tokio::fs;
+use tokio::process::Command;
 
 pub struct PdfService;
 
@@ -17,52 +16,43 @@ impl PdfService {
         output_path: &PathBuf,
     ) -> Result<Vec<u8>> {
         // Create a temporary directory for processing
-        let temp_dir = tempfile::Builder::new()
-            .prefix("noteforge-latex")
-            .tempdir()
+        let temp_dir = std::env::temp_dir().join(format!("noteforge-{}", uuid::Uuid::new_v4()));
+        fs::create_dir_all(&temp_dir)
+            .await
             .map_err(|e| ApiError::LaTeXError(format!("Failed to create temp dir: {}", e)))?;
 
         // Write LaTeX content to a temporary file
-        let latex_path = temp_dir.path().join("output.tex");
+        let latex_path = temp_dir.join("output.tex");
         fs::write(&latex_path, latex_content)
             .await
             .map_err(|e| ApiError::LaTeXError(format!("Failed to write LaTeX file: {}", e)))?;
 
-        // Set up Tectonic processing
-        let auto_create_config_file = false;
-        let only_cached = false;
-        let bundle = tectonic::Bundle::new(only_cached).map_err(|e| {
-            ApiError::LaTeXError(format!("Failed to initialize Tectonic bundle: {}", e))
-        })?;
+        // Run pdflatex
+        let output = Command::new("pdflatex")
+            .args([
+                "-interaction=nonstopmode",
+                "-output-directory",
+                temp_dir.to_str().unwrap(),
+                latex_path.to_str().unwrap(),
+            ])
+            .output()
+            .await
+            .map_err(|e| ApiError::LaTeXError(format!("Failed to run pdflatex: {}", e)))?;
 
-        let format_cache_path = tectonic::FormatCache::default();
-
-        // Create processing session
-        let mut session = ProcessingSessionBuilder::new()
-            .bundle(bundle)
-            .primary_input_path(latex_path.to_str().unwrap())
-            .format_cache_path(format_cache_path)
-            .keep_logs(false)
-            .keep_intermediates(false)
-            .do_not_write_output_files()
-            .build()
-            .map_err(|e| {
-                ApiError::LaTeXError(format!("Failed to create processing session: {}", e))
-            })?;
-
-        // Run the processing
-        if let Err(e) = session.run(auto_create_config_file) {
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            let stdout = String::from_utf8_lossy(&output.stdout);
             return Err(ApiError::LaTeXError(format!(
-                "PDF generation failed: {}",
-                e
+                "PDF generation failed: {}\n{}",
+                stderr, stdout
             )));
         }
 
-        // Get the PDF data
-        let pdf_data = session
-            .get_pdf_data()
-            .map_err(|e| ApiError::LaTeXError(format!("Failed to get PDF data: {}", e)))?
-            .ok_or_else(|| ApiError::LaTeXError("No PDF data generated".to_string()))?;
+        // Read the generated PDF
+        let pdf_path = temp_dir.join("output.pdf");
+        let pdf_data = fs::read(&pdf_path)
+            .await
+            .map_err(|e| ApiError::LaTeXError(format!("Failed to read PDF file: {}", e)))?;
 
         // Write to output path if provided
         if let Some(parent) = output_path.parent() {
@@ -74,6 +64,11 @@ impl PdfService {
                 .await
                 .map_err(|e| ApiError::FileError(format!("Failed to write PDF file: {}", e)))?;
         }
+
+        // Clean up temporary directory
+        tokio::spawn(async move {
+            let _ = fs::remove_dir_all(temp_dir).await;
+        });
 
         Ok(pdf_data)
     }

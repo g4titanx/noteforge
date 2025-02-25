@@ -1,4 +1,4 @@
-use axum::http::HeaderMap;
+pub use axum::http::HeaderMap;
 
 #[macro_export]
 macro_rules! headers_map {
